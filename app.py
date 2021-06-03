@@ -2,6 +2,9 @@ from flask import Flask, render_template, Response
 from camera import Camera
 import cv2
 
+from flask_jsglue import JSGlue
+
+
 # import darknet functions to perform object detections
 from darknet import *
 # load in our YOLOv4 architecture network
@@ -40,6 +43,7 @@ def overlay_boxes(img, detections, width_ratio, height_ratio):
     return img
 
 app = Flask(__name__)
+jsglue = JSGlue(app)
 
 @app.route('/')
 def index():
@@ -51,10 +55,10 @@ def camera():
 
 def gen(camera):
     while True:
-        frame, img = camera.get_frame()
-        detections, width_ratio, height_ratio = darknet_helper(img, width, height)
-        labeled = overlay_boxes(img, detections, width_ratio, height_ratio)
-        ret, labeled_jpeg = cv2.imencode('.jpg', labeled)
+        img = camera.get_frame()
+        # detections, width_ratio, height_ratio = darknet_helper(img, width, height)
+        # labeled = overlay_boxes(img, detections, width_ratio, height_ratio)
+        ret, labeled_jpeg = cv2.imencode('.jpg', img)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + labeled_jpeg.tobytes() + b'\r\n\r\n')
 
@@ -67,17 +71,17 @@ def video_feed():
 def test():
     return render_template('test.html')
 
-def genImg():
-   img = cv2.imread("../test_img/handgun_knives.jpeg")
-   detections, width_ratio, height_ratio = darknet_helper(img, width, height)
-   labeled = overlay_boxes(img, detections, width_ratio, height_ratio)
-   ret, labeled_jpeg = cv2.imencode('.jpg', labeled)
-   yield (b'--frame\r\n'
-          b'Content-Type: image/jpeg\r\n\r\n' + labeled_jpeg.tobytes() + b'\r\n\r\n')
+def detect(camera):
+    img = camera.get_frame()
+    detections, width_ratio, height_ratio = darknet_helper(img, width, height)
+    labeled = overlay_boxes(img, detections, width_ratio, height_ratio)
+    ret, labeled_jpeg = cv2.imencode('.jpg', img)
+    yield (b'--frame\r\n'
+           b'Content-Type: image/jpeg\r\n\r\n' + labeled_jpeg.tobytes() + b'\r\n\r\n')
 
 @app.route('/imgtest')
 def test_img():
-    return Response(genImg(),
+    return Response(detect(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
