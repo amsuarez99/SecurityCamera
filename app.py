@@ -6,7 +6,7 @@ import cv2
 from darknet import *
 # load in our YOLOv4 architecture network
 print(" * Loading network...")
-network, class_names, class_colors = load_network("cfg/yolov4-csp.cfg", "cfg/coco.data", "cfg/yolov4-csp.weights")
+network, class_names, class_colors = load_network("../model/yolov4-obj.cfg", "../model/obj.data", "../model/yolov4-obj_best.weights")
 width = network_width(network)
 height = network_height(network)
 
@@ -51,9 +51,9 @@ def camera():
 
 def gen(camera):
     while True:
-        frame, original = camera.get_frame()
-        detections, width_ratio, height_ratio = darknet_helper(original, width, height)
-        labeled = overlay_boxes(original, detections, width_ratio, height_ratio)
+        frame, img = camera.get_frame()
+        detections, width_ratio, height_ratio = darknet_helper(img, width, height)
+        labeled = overlay_boxes(img, detections, width_ratio, height_ratio)
         ret, labeled_jpeg = cv2.imencode('.jpg', labeled)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + labeled_jpeg.tobytes() + b'\r\n\r\n')
@@ -68,7 +68,7 @@ def test():
     return render_template('test.html')
 
 def genImg():
-   img = cv2.imread("data/person.jpg")
+   img = cv2.imread("../test_img/handgun_knives.jpeg")
    detections, width_ratio, height_ratio = darknet_helper(img, width, height)
    labeled = overlay_boxes(img, detections, width_ratio, height_ratio)
    ret, labeled_jpeg = cv2.imencode('.jpg', labeled)
