@@ -9,13 +9,18 @@ from flask_jsglue import JSGlue
 from darknet import *
 # load in our YOLOv4 architecture network
 print(" * Loading network...")
-network, class_names, class_colors = load_network("../model/yolov4-obj.cfg", "../model/obj.data", "../model/yolov4-obj_best.weights")
+
+# Loads the network to use
+network, class_names, class_colors = load_network("../model/yolov4-obj.cfg", "../model/obj.data", "../model/yolov4-obj_3000.weights")
+# network, class_names, class_colors = load_network("../model/yolov4-obj.cfg", "../model/obj.data", "../model/yolov4-obj_last.weights")
+# network, class_names, class_colors = load_network("../model/yolov4-obj.cfg", "../model/obj.data", "../model/yolov4-obj_best.weights")
+# network, class_names, class_colors = load_network("cfg/yolov4-csp.cfg", "cfg/coco.data", "cfg/yolov4-csp.weights")
+
 width = network_width(network)
 height = network_height(network)
 
 
 # Helper Functions
-
 def darknet_helper(img, width, height):
   darknet_image = make_image(width, height, 3)
   img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -47,10 +52,6 @@ jsglue = JSGlue(app)
 
 @app.route('/')
 def index():
-    return "App is in /camera"
-
-@app.route('/camera')
-def camera():
     return render_template('index.html')
 
 def gen(camera):
@@ -67,9 +68,10 @@ def video_feed():
     return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/test')
-def test():
-    return render_template('test.html')
+@app.route('/detect_video')
+def detect_video():
+    return Response(detect(Camera()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def detect(camera):
     img = camera.get_frame()
@@ -78,11 +80,6 @@ def detect(camera):
     ret, labeled_jpeg = cv2.imencode('.jpg', img)
     yield (b'--frame\r\n'
            b'Content-Type: image/jpeg\r\n\r\n' + labeled_jpeg.tobytes() + b'\r\n\r\n')
-
-@app.route('/imgtest')
-def test_img():
-    return Response(detect(Camera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)

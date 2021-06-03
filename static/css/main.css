@@ -1,0 +1,40 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #788aa3;
+  color: #f4f4f4;
+  width: 100vw;
+}
+
+img {
+  border-radius: 1em;
+  margin-bottom: 1em;
+  display: block;
+}
+
+.button {
+  padding: 0.4em 0.6em;
+}
+
+#scan {
+  display: block;
+  width: 200px;
+  margin: 0 auto;
+  text-transform: uppercase;
+}
+
+.container {
+  width: 80vw;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-center {
+  text-align: center;
+}

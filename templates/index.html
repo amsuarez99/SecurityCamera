@@ -1,10 +1,26 @@
-<html>
-  <head>
-    <title>MJRoBot Lab Live Streaming</title>
-  </head>
-  <body>
-    <h1>Security cam</h1>
-    <h3><img src="{{ url_for('video_feed') }}" width="90%"></h3>
-    <hr>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/css/main.css">
+  <title>Security camera</title>
+</head>
+<body>
+    <h1 class="text-center">Security cam</h1>
+    <button class="button" id="scan">Scan for weapons</button>
+    <div class="container">
+      <img src="{{ url_for('video_feed') }}" id="feed">
+      <img src="" id="scanned">
+    </div>
+    {{JSGlue.include()}}
+    <script>
+        document.querySelector('#scan').addEventListener('click', (e) => {
+            console.log("hello");
+            const img = Flask.url_for('detect_video', {});//e.returnValue
+            if (img)
+              document.querySelector("#scanned").setAttribute("src", img)
+        });
+    </script>
+</body>
 </html>
